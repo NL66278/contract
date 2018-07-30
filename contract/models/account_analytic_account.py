@@ -237,15 +237,17 @@ class AccountAnalyticAccount(models.Model):
             self.partner_id.property_product_pricelist.currency_id or
             self.company_id.currency_id
         )
+        name = self._insert_markers(self.invoice_name or self.name)
         invoice = self.env['account.invoice'].new({
-            'reference': self.code,
+            'reference': self.name,
+            'name': name,  # from invoice name or name
             'type': 'out_invoice',
             'partner_id': self.partner_id.address_get(
                 ['invoice'])['invoice'],
             'currency_id': currency.id,
             'journal_id': journal.id,
             'date_invoice': self.recurring_next_date,
-            'origin': self.name,
+            'origin': self.code,
             'company_id': self.company_id.id,
             'contract_id': self.id,
             'user_id': self.partner_id.user_id.id,
