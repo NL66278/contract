@@ -360,19 +360,6 @@
         <field name="view_mode">graph,pivot</field>
     </record>
 
-    <!-- Adding a new filter to the order line search view -->
-    <record id="order_lines_search_view" model="ir.ui.view">
-        <field name="name">Order Lines Search</field>
-        <field name="model">sale.order.line</field>
-        <field name="type">search</field>
-        <field name="inherit_id" ref="sale.view_sales_order_line_filter"/>
-        <field name="arch" type="xml">
-            <xpath expr="/search/filter[1]" position="after">
-                <filter name="filter_service_product_type" string="Service Type" domain="[('type', '=', 'service')]"/>
-            </xpath>
-        </field>
-    </record>
-
     <!-- actions opening views on models -->
     <record model="ir.actions.act_window" id="agreement_dashboard_agreement">
         <field name="name">Agreements</field>

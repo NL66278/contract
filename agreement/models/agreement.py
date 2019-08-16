@@ -93,22 +93,6 @@ class Agreement(models.Model):
         default=lambda self: _('New'),
         track_visibility='onchange',
         help="ID used for internal contract tracking.")
-    total_company_mrc = fields.Monetary(
-        'Company MRC',
-        currency_field='currency_id',
-        help="Total company monthly recurring costs.")
-    total_customer_mrc = fields.Monetary(
-        'Customer MRC',
-        currency_field='currency_id',
-        help="Total custemer monthly recurring costs.")
-    total_company_nrc = fields.Monetary(
-        'Company NRC',
-        currency_field='currency_id',
-        help="Total company non-recurring costs.")
-    total_customer_nrc = fields.Monetary(
-        'Customer NRC',
-        currency_field='currency_id',
-        help="Total custemer non-monthly recurring costs.")
     increase_type_id = fields.Many2one(
         'agreement.increasetype',
         string="Increase Type",
@@ -185,12 +169,6 @@ class Agreement(models.Model):
     product_ids = fields.Many2many(
         'product.template',
         string="Products & Services")
-    sale_order_id = fields.Many2one(
-        'sale.order',
-        string="Sales Order",
-        track_visibility='onchange',
-        copy=False,
-        help="Select the Sales Order that this agreement is related to.")
     payment_term_id = fields.Many2one(
         'account.payment.term',
         string="Payment Term",
@@ -223,10 +201,6 @@ class Agreement(models.Model):
         string="Renewal Type",
         track_visibility='onchange',
         help="Describes what happens after the contract expires.")
-    order_lines_services_ids = fields.One2many(
-        related='sale_order_id.order_line',
-        string="Service Order Lines",
-        copy=False)
     recital_ids = fields.One2many('agreement.recital', 'agreement_id',
                                   string="Recitals", copy=True)
     sections_ids = fields.One2many('agreement.section', 'agreement_id',
@@ -316,23 +290,6 @@ class Agreement(models.Model):
                 lang=lang).render_template(
                 agreement.special_terms, 'agreement', agreement.id)
             agreement.dynamic_special_terms = special_terms
-
-    # compute contract_value field
-    @api.depends('total_customer_mrc', 'total_customer_nrc', 'term')
-    def _compute_contract_value(self):
-        for record in self:
-            record.contract_value = \
-                (record.total_customer_mrc * record.term) + \
-                record.total_customer_nrc
-
-    # compute total_company_mrc field
-    @api.depends('order_lines_services_ids', 'sale_order_id')
-    def _compute_company_mrc(self):
-        order_lines = self.env['sale.order.line'].search(
-            [('is_service', '=', True)])
-        amount_total = sum(order_lines.mapped('purchase_price'))
-        for record in self:
-            record.total_company_mrc = amount_total
 
     @api.onchange('field_id', 'sub_model_object_field_id', 'default_value')
     def onchange_copyvalue(self):
